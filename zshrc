@@ -37,7 +37,11 @@ export HISTFILE=$HOME/.zsh_history
 export HISTSIZE=100000
 export SAVEHIST=$HISTSIZE
 export TERM=xterm-256color
-export EDITOR=nvim
+
+if type nvim > /dev/null 2>&1; then
+  export EDITOR=nvim
+fi
+
 setopt share_history
 setopt extended_history
 setopt append_history
