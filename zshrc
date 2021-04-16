@@ -61,11 +61,6 @@ zstyle ':completion:*:sudo:*' \
         /usr/X11R6/bin \
         /usr/local/git/bin
 
-if type dircolors > /dev/null 2>&1; then
-  eval $(dircolors $HOME/.dircolors)
-elif type gdircolors > /dev/null 2>&1; then
-  eval $(gdircolors $HOME/.dircolors)
-fi
 export ZLS_COLORS=$LS_COLORS
 export CLICOLOR=true
 
