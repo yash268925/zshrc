@@ -14,6 +14,7 @@ zinit wait lucid for \
         zdharma/fast-syntax-highlighting \
     blockf \
         zsh-users/zsh-completions \
+        b4b4r07/zsh-vimode-visual
 
 # Load a few important annexes, without Turbo
 # (this is currently required for annexes)
@@ -28,8 +29,8 @@ bindkey -v
 
 zinit light zsh-users/zsh-autosuggestions
 zinit light zdharma/fast-syntax-highlighting
-zinit light tj/git-extras
 zinit light zsh-users/zsh-history-substring-search
+zinit light b4b4r07/zsh-vimode-visual
 
 export LANG=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
@@ -39,15 +40,15 @@ export SAVEHIST=$HISTSIZE
 export TERM=xterm-256color
 
 if type nvim > /dev/null 2>&1; then
-  export EDITOR=nvim
+    export EDITOR=nvim
 fi
 
 setopt share_history
 setopt extended_history
 setopt append_history
 
-bindkey '^P' history-substring-search-up
-bindkey '^N' history-substring-search-down
+bindkey -M vicmd 'k' history-substring-search-up
+bindkey -M vicmd 'j' history-substring-search-down
 
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 zstyle ':completion:*:sudo:*' \
@@ -61,20 +62,46 @@ zstyle ':completion:*:sudo:*' \
         /usr/X11R6/bin \
         /usr/local/git/bin
 
+if type dircolors > /dev/null 2>&1; then
+    eval $(dircolors $HOME/.dircolors)
+elif type gdircolors > /dev/null 2>&1; then
+    eval $(gdircolors $HOME/.dircolors)
+fi
 export ZLS_COLORS=$LS_COLORS
 export CLICOLOR=true
 
 if [[ $(/bin/ls --version > /dev/null 2>&1| xargs | awk "{print $2}") =~ coreutils ]]; then
-  LS='ls'
+    LS='ls'
 else
-  LS='gls'
+    LS='gls'
 fi
 alias ls="$LS --color"
 
-export PROMPT=$'\n'"%F{220}${HOST}: %F{222}%~"$'\n'"%F{007}%# "
+terminfo_down_sc=$terminfo[cud1]$terminfo[cud1]$terminfo[cuu1]$terminfo[cuu1]$terminfo[sc]$terminfo[cud1]$terminfo[cud1]
+
+function zle-keymap-select zle-line-init zle-line-finish {
+    case $KEYMAP in
+        main|viins)
+            PROMPT_2=""
+            ;;
+        vicmd)
+            PROMPT_2="%F{white}-- NORMAL --%f"
+            ;;
+        vivis|vivli)
+            PROMPT_2="%F{yellow}-- VISUAL --%f"
+            ;;
+    esac
+
+    PROMPT="$terminfo[cud1]%{$terminfo_down_sc$PROMPT_2$terminfo[rc]%}%F{011}${HOST}: %F{007}%~$terminfo[cud1]%F{015}%# "
+    zle reset-prompt
+}
+
+zle -N zle-line-init
+zle -N zle-line-finish
+zle -N zle-keymap-select
 
 export PATH=$HOME/.local/bin:$PATH
 
 if [[ -f $HOME/.zshrc.local ]]; then
-  source $HOME/.zshrc.local
+    source $HOME/.zshrc.local
 fi
